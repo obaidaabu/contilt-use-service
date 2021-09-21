@@ -25,6 +25,18 @@ class DescriptionPhrases:
         self.penalty = 0.8
 
     def extract(self, docs):
+        phraseWeight = {}
+        for doc in docs:
+            for sentence in doc:
+                sentence_phrases = self.getPhrases(sentence["text"])
+                for phrase in sentence_phrases:
+                    if phrase in phraseWeight:
+                        phraseWeight[phrase] = phraseWeight[phrase] + sentence["score"]
+                    else:
+                        phraseWeight[phrase] = sentence["score"]
+        return phraseWeight
+
+    def extractOldOld(self, docs):
         adjectiveDocFrequency = {}
         nameDocFrequency = {}
         phraseDocFreq = {}
@@ -157,7 +169,7 @@ class DescriptionPhrases:
         
         return res
 
-    def getPhrases(self, sentence):
+    def getPhrasesOld(self, sentence):
         analyzed_sent = self.nlp(sentence)
         adverbs = self.AdverbMatcher(analyzed_sent)
         for match_id, start, end in adverbs:
@@ -203,6 +215,21 @@ class DescriptionPhrases:
             #     currName1 = span[0].text
             #     currName2 = span[1].text
             #     phrases.append([currAdj,currName1, currName2])
+        return phrases
+
+    def getPhrases(self, sentence):
+        analyzed_sent = self.nlp(sentence)
+        adverbs = self.AdverbMatcher(analyzed_sent)
+        for match_id, start, end in adverbs:
+            sentence = sentence.replace(analyzed_sent[start:end][0].text, "").replace("  ", " ")
+
+        analyzed_sent = self.nlp(sentence)
+        matches = self.PhrasesMatcher(analyzed_sent)
+        phrases = []
+        for match_id, start, end in matches:
+            span = analyzed_sent[start:end]
+            span_text = " ".join([t.text for t in span])
+            phrases.append(span_text)
         return phrases
 
     def getDescriptiveSentences(self, sentences):
