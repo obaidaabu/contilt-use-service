@@ -1,6 +1,7 @@
 
 from helpers.helpers import *
 import spacy_universal_sentence_encoder
+import time
 
 
 class Summarization:
@@ -11,17 +12,21 @@ class Summarization:
         """
         weightedSentences: is a map from "text" to double
         """
+        seconds = time.time()
+
         sentenceDocs = {}
         simMap = {}
         sentenceUniquness = {}
 
         if max_selected is None:
             max_selected = len(weightedSentences)
-
+        print("Summarization start =", seconds)
         for sent in weightedSentences:
-            sentenceDocs[sent] = self.nlp(sent)
+            sentenceDocs[sent] = self.nlp(sent, disable=["parser", "ner"])
             simMap[sent] = {}
             sentenceUniquness[sent] = 1
+        print("Summarization nlp =", time.time() - seconds)
+        seconds = time.time()
 
         for sent1 in sentenceDocs:
             for sent2 in sentenceDocs:
@@ -30,6 +35,8 @@ class Summarization:
                 curr_sim = sentenceDocs[sent1].similarity(sentenceDocs[sent2])
                 simMap[sent1][sent2] = curr_sim
                 simMap[sent2][sent1] = curr_sim
+        print("Summarization similarity =", time.time() - seconds)
+        seconds = time.time()
         # Normalize similarity
         norm_sim = normalizeSimMatrix(simMap)
 
@@ -60,6 +67,7 @@ class Summarization:
             res.append({"sentence": best_sentence, "score": sentence_scores[best_sentence]})
             for sentence in sentenceUniquness:
                 sentenceUniquness[sentence] = sentenceUniquness[sentence]*(1-norm_sim[sentence][best_sentence])
+        print("Summarization finish =", time.time() - seconds)
         return res
 
 

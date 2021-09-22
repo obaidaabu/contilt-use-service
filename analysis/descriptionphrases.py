@@ -1,6 +1,7 @@
 import spacy
 from spacy.matcher import Matcher
 from helpers.helpers import *
+import time
 
 
 
@@ -8,10 +9,10 @@ class DescriptionPhrases:
     def __init__(self, spacy_model= spacy.load('en_core_web_lg')):
         self.nlp = spacy_model
         self.PhrasesMatcher = Matcher(self.nlp.vocab)
-        pattern1 = [{"POS": "ADJ"}, {"POS": "NOUN"}]
-        pattern2 = [{"POS": "ADJ"}, {"POS": "NOUN"}, {"POS": "NOUN"}]
-        pattern3 = [{"POS": "NOUN"}, {"POS": "NOUN"}, {"LEMMA": "be"}, {"POS": "ADJ"}]
-        pattern4 = [{"POS": "NOUN"}, {"LEMMA": "be"}, {"POS": "ADJ"}]
+        pattern1 = [{"POS": "ADJ"}, {"POS": {"IN": ["NOUN", "PROPN"]}}]
+        pattern2 = [{"POS": "ADJ"}, {"POS": {"IN": ["NOUN", "PROPN"]}}, {"POS": "NOUN"}]
+        pattern3 = [{"POS": "ADJ", "OP": "?"}, {"POS": {"IN": ["PRON", "NOUN", "PROPN"]}}, {"POS": "NOUN"}, {"LEMMA": "be"}, {"POS": "ADJ"}]
+        pattern4 = [{"POS": "ADJ", "OP": "?"}, {"POS": {"IN": ["NOUN", "PROPN"]}}, {"LEMMA": "be"}, {"POS": "ADJ"}]
         pattern5 = [{"POS": "ADJ"}, {"POS": "ADJ"}, {"POS": "NOUN"}, {"POS": "NOUN"}]
         pattern7 = [{"POS": "ADJ"}, {"POS": "ADJ"}, {"POS": "NOUN"}]
         pattern6 = [{"POS": "ADJ"}, {"POS": "NOUN"}, {"POS": "NOUN", "OP": "?"}, {"LOWER": "and"}, {"POS": "NOUN"}, {"POS": "NOUN", "OP": "?"}]
@@ -26,8 +27,13 @@ class DescriptionPhrases:
         self.penalty = 0.8
 
     def extract(self, docs):
+        seconds = time.time()
+        print("extract start =", seconds)
+        df = {}
+
         phraseWeight = {}
         for doc in docs:
+            docphrases = set()
             for sentence in doc:
                 sentence_phrases = self.getPhrases(sentence["text"])
                 for phrase in sentence_phrases:
@@ -35,7 +41,20 @@ class DescriptionPhrases:
                         phraseWeight[phrase] = phraseWeight[phrase] + sentence["score"]
                     else:
                         phraseWeight[phrase] = sentence["score"]
-        return phraseWeight
+                    docphrases.add(phrase)
+            for phrase in docphrases:
+                addVToMap(df, phrase, 1)
+        print("extract finish =", time.time() - seconds)
+        filtered = phraseWeight
+
+        if len(docs) > 4:
+            filtered = {}
+            for phrase in df:
+                if len(phrase.split()) > 2 or df[phrase] > 1:
+                    filtered[phrase] = phraseWeight[phrase]
+
+
+        return filtered
 
     def extractOldOld(self, docs):
         adjectiveDocFrequency = {}
@@ -171,12 +190,12 @@ class DescriptionPhrases:
         return res
 
     def getPhrasesOld(self, sentence):
-        analyzed_sent = self.nlp(sentence)
+        analyzed_sent = self.nlp(sentence, disable=["parser", "ner"])
         adverbs = self.AdverbMatcher(analyzed_sent)
         for match_id, start, end in adverbs:
             sentence = sentence.replace(analyzed_sent[start:end][0].text, "").replace("  ", " ")
 
-        analyzed_sent = self.nlp(sentence)
+        analyzed_sent = self.nlp(sentence, disable=["parser", "ner"])
         matches = self.PhrasesMatcher(analyzed_sent)
         phrases = []
         for match_id, start, end in matches:
