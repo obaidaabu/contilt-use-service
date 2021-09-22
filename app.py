@@ -41,7 +41,7 @@ def getSimilarityToQuery():
 def getDescriptivePhrasesSummarized():
     data = request.get_json()
     phrases_to_weights = descriptionPhrases.extract(data)
-    res = summarizer.weightedSummary(phrases_to_weights, 50)
+    res = summarizer.weightedSummary(phrases_to_weights, 100)
     return jsonify(res)
 
 # receives a map of sentences to scores (one object that keys are sentences and values are their weights)
