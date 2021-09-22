@@ -14,8 +14,9 @@ class DescriptionPhrases:
         pattern4 = [{"POS": "NOUN"}, {"LEMMA": "be"}, {"POS": "ADJ"}]
         pattern5 = [{"POS": "ADJ"}, {"POS": "ADJ"}, {"POS": "NOUN"}, {"POS": "NOUN"}]
         pattern7 = [{"POS": "ADJ"}, {"POS": "ADJ"}, {"POS": "NOUN"}]
-        #pattern6 = [{"POS": "ADJ"}, {"POS": "NOUN"}, {"LOWER": "and"}, {"POS": "NOUN"}]
+        pattern6 = [{"POS": "ADJ"}, {"POS": "NOUN"}, {"POS": "NOUN", "OP": "?"}, {"LOWER": "and"}, {"POS": "NOUN"}, {"POS": "NOUN", "OP": "?"}]
         self.PhrasesMatcher.add("ADJNOUN", [pattern2, pattern1, pattern5, pattern7], greedy="LONGEST")
+        self.PhrasesMatcher.add("HASAND", [pattern6], greedy="LONGEST")
         # self.PhrasesMatcher.add("ADJNOUNNOUN", [pattern2])
         self.PhrasesMatcher.add("NOUNADJ", [pattern3, pattern4], greedy="LONGEST")
         # self.PhrasesMatcher.add("NOUNNOUNADJ", [pattern3])
