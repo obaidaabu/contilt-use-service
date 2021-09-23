@@ -110,5 +110,9 @@ def normalizeSimMatrix(simMatrix):
     for k1 in simMatrix:
         res[k1] = {}
         for k2 in simMatrix[k1]:
-            res[k1][k2] = max(min(1.0, (simMatrix[k1][k2]-min(keyMinSim[k1], keyMinSim[k2]))/(max(keyMaxSim[k1], keyMaxSim[k2])-min(keyMinSim[k1], keyMinSim[k2]))),0)
+            denominator = (max(keyMaxSim[k1], keyMaxSim[k2])-min(keyMinSim[k1], keyMinSim[k2]))
+            if denominator == 0:
+                res[k1][k2] = 0
+            else:
+                res[k1][k2] = max(min(1.0, (simMatrix[k1][k2]-min(keyMinSim[k1], keyMinSim[k2]))/denominator), 0)
     return res
