@@ -105,7 +105,7 @@ def normalizeSimMatrix(simMatrix):
     for k in simMatrix:
         keyMaxSim[k] = max([v for v in simMatrix[k].values() if v < 0.99])
 
-        keyMinSim[k] = min(sorted(simMatrix[k].values(), key=lambda k: k, reverse=True)[0:int(len(simMatrix[k]) * 0.2)])
+        keyMinSim[k] = min(sorted(simMatrix[k].values(), key=lambda k: k, reverse=True)[0:max(int(len(simMatrix[k]) * 0.2), len(simMatrix[k]))])
 
     for k1 in simMatrix:
         res[k1] = {}
