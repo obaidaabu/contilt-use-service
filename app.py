@@ -40,7 +40,14 @@ def getSimilarityToQuery():
 @app.route('/api/getDescriptivePhrasesSummarized', methods=['POST'])
 def getDescriptivePhrasesSummarized():
     data = request.get_json()
-    phrases_to_weights = descriptionPhrases.extract(data)
+    # sentiment_scores = summarizer.getSentimentScores([sentence["text"] for doc in data for sentence in doc])
+    # to_keep = set(sorted(sentiment_scores, key=lambda k: sentiment_scores[k], reverse=True)[0: int(len(sentiment_scores) * 0.5)])
+    # filtered_docs = [[{"text": sentence["text"], "score":  1} for sentence in doc if sentence["text"] in to_keep] for doc in data]
+
+    filtered_docs = [[{"text": sentence["text"], "score": 1} for sentence in doc] for doc
+                     in data]
+
+    phrases_to_weights = descriptionPhrases.extract(filtered_docs)
     res = summarizer.weightedSummary(phrases_to_weights, 100)
     return jsonify(res)
 

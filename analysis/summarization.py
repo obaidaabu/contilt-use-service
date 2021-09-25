@@ -8,6 +8,28 @@ class Summarization:
     def __init__(self, nlp = spacy_universal_sentence_encoder.load_model('en_use_lg')):
         self.nlp = nlp
 
+    def getSentimentScores(self, sentences):
+        good_sentences = ["good", "excellent", "high quality", "great performance", "best", "sharp", "beautiful", "fast", "pleasant", "bright", "friendly", "useful", "elegant", "sleek", "vivid", "vibrant", "competitive"]
+        bad_sentences = ["bad", "poor", "low quality", "disappointing", "inadequate", "hard"]
+        good_docs = []
+        result = {}
+        seconds = time.time()
+        for good in good_sentences:
+            good_docs.append(self.nlp(good, disable=["parser", "ner"]))
+
+        for sentence in sentences:
+            current_doc = self.nlp(sentence, disable=["parser", "ner"])
+            current_score = 0
+            for good_doc in good_docs:
+                current_score += current_doc.similarity(good_doc)
+            current_score = current_score / len(good_docs)
+            result[sentence] = current_score
+        print("getSentimentScores =", time.time() - seconds)
+        return result
+
+
+
+
     def weightedSummary(self, weightedSentences, max_selected=None, aggresive_uniqueness=True):
         """
         weightedSentences: is a map from "text" to double
